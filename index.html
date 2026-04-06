@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veo 3.1 Prompt Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #f4f6f8;
+  --bg2:        #ffffff;
+  --bg3:        #eef1f4;
+  --border:     #d0d7de;
+  --border2:    #b0bac4;
+  --text:       #1a1f26;
+  --text2:      #4a5568;
+  --text3:      #8896a8;
+  --blue:       #0969da;
+  --blue-bg:    #ddf0ff;
+  --blue-border:#7ab8f5;
+  --green:      #1a7f37;
+  --green-bg:   #d4f0dc;
+  --green-border:#5dc57a;
+  --amber:      #9a6700;
+  --amber-bg:   #fff3cd;
+  --amber-border:#e8c54a;
+  --purple:     #6639ba;
+  --purple-bg:  #ede9ff;
+  --purple-border:#b39cf5;
+  --red:        #cf222e;
+  --red-bg:     #ffd7d5;
+  --radius:     6px;
+  --radius-lg:  10px;
+  --shadow:     0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 12px rgba(0,0,0,0.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+.header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 10; }
+.logo { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.logo span { color: var(--blue); }
+.header-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue); letter-spacing: 0.04em; }
+
+.container { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+.tabs { display: flex; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 4px; gap: 4px; margin-bottom: 1.75rem; box-shadow: var(--shadow); }
+.tab { flex: 1; text-align: center; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 7px; cursor: pointer; color: var(--text2); transition: all 0.15s; user-select: none; }
+.tab:hover { background: var(--bg3); color: var(--text); }
+.tab.active { background: var(--blue); color: #fff; box-shadow: var(--shadow); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.card-title::before { content: ''; display: block; width: 3px; height: 14px; background: var(--blue); border-radius: 2px; }
+
+.section { margin-bottom: 1rem; }
+.section:last-child { margin-bottom: 0; }
+.section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+
+textarea, input[type="text"], input[type="password"] { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; padding: 9px 12px; line-height: 1.6; outline: none; transition: border-color 0.15s, box-shadow 0.15s; resize: vertical; box-shadow: inset 0 1px 2px rgba(0,0,0,0.04); }
+textarea { min-height: 100px; }
+textarea:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(9,105,218,0.12); }
+::placeholder { color: var(--text3); }
+
+.pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 99px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--text2); cursor: pointer; user-select: none; transition: all 0.12s; box-shadow: var(--shadow); }
+.pill:hover { border-color: var(--border2); color: var(--text); background: var(--bg3); }
+.pill.active { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); font-weight: 600; box-shadow: 0 0 0 1px var(--blue); }
+.pill.active-green { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 600; box-shadow: 0 0 0 1px var(--green); }
+.pill.active-amber { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber); font-weight: 600; box-shadow: 0 0 0 1px var(--amber-border); }
+
+.audio-hint { margin-top: 8px; font-size: 12px; color: var(--text2); padding: 7px 12px; background: var(--bg3); border-radius: var(--radius); border-left: 3px solid var(--border2); }
+
+.row { display: flex; gap: 16px; flex-wrap: wrap; }
+.field { flex: 1; min-width: 180px; }
+
+.btn { display: inline-flex; align-items: center; gap: 7px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--bg2); color: var(--text2); cursor: pointer; transition: all 0.12s; box-shadow: var(--shadow); user-select: none; }
+.btn:hover { background: var(--bg3); border-color: var(--border2); color: var(--text); }
+.btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn-primary:hover { background: #0860c8; border-color: #0860c8; color: #fff; }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-green { background: var(--green); border-color: var(--green); color: #fff; }
+.btn-green:hover { background: #166030; border-color: #166030; color: #fff; }
+.btn-green:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-sm { font-size: 12px; padding: 5px 12px; }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+.result-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-top: 1.25rem; box-shadow: var(--shadow-md); }
+.result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.result-title { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+.prompt-out { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.9; color: var(--text); white-space: pre-wrap; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-top: 10px; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; padding: 2px 9px; border-radius: 99px; border: 1px solid; }
+.t-shot   { background: var(--blue-bg);   color: var(--blue);   border-color: var(--blue-border); }
+.t-pos    { background: var(--green-bg);  color: var(--green);  border-color: var(--green-border); }
+.t-style  { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
+.t-spec   { background: var(--bg3);       color: var(--text2);  border-color: var(--border); }
+.t-aud-veo{ background: var(--green-bg);  color: var(--green);  border-color: var(--green-border); }
+.t-aud-ext{ background: var(--amber-bg);  color: var(--amber);  border-color: var(--amber-border); }
+
+.char-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 10px; }
+.char-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.char-row .field { min-width: 140px; }
+.remove-btn { background: none; border: 1.5px solid var(--border); color: var(--text3); cursor: pointer; font-size: 16px; font-weight: 600; padding: 3px 9px; border-radius: var(--radius); align-self: flex-end; margin-bottom: 2px; transition: all 0.12s; line-height: 1.4; }
+.remove-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+.voice-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.voice-pill { font-size: 12px; font-weight: 500; padding: 4px 11px; border-radius: 99px; border: 1.5px solid var(--border); cursor: pointer; background: var(--bg2); color: var(--text2); transition: all 0.12s; box-shadow: var(--shadow); }
+.voice-pill:hover { border-color: var(--border2); color: var(--text); }
+.voice-pill.active { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 600; }
+.pos-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 99px; margin-left: 6px; text-transform: uppercase; border: 1px solid; }
+.pos-left   { background: var(--blue-bg);   color: var(--blue);   border-color: var(--blue-border); }
+.pos-right  { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
+.pos-center { background: var(--green-bg);  color: var(--green);  border-color: var(--green-border); }
+.pos-other  { background: var(--bg3);       color: var(--text2);  border-color: var(--border); }
+
+.api-section { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+.api-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.api-row input { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.api-status { font-size: 12px; margin-top: 6px; color: var(--text3); }
+.api-status.ok { color: var(--green); font-weight: 500; }
+.api-status.err { color: var(--red); font-weight: 500; }
+
+.ai-response { background: var(--bg2); border: 1px solid var(--green-border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-top: 1.25rem; display: none; box-shadow: var(--shadow-md); }
+.ai-response h4 { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.ai-response-body { font-size: 14px; line-height: 1.85; color: var(--text); white-space: pre-wrap; background: var(--bg3); border-radius: var(--radius); border: 1px solid var(--border); padding: 1rem 1.25rem; }
+
+.spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.warn { font-size: 13px; font-weight: 500; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: var(--radius); padding: 9px 14px; margin-top: 12px; }
+.err-box { font-size: 13px; font-weight: 500; color: var(--red); background: var(--red-bg); border: 1px solid #f5b8bb; border-radius: var(--radius); padding: 9px 14px; margin-top: 12px; }
+.info-box { font-size: 13px; color: var(--text2); background: var(--blue-bg); border: 1px solid var(--blue-border); border-radius: var(--radius); padding: 9px 14px; line-height: 1.7; }
+
+code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; color: var(--text); }
+.footer { text-align: center; padding: 2rem; font-size: 12px; color: var(--text3); border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Veo 3.1 <span>Prompt Builder</span></div>
+  <div class="header-badge">Google Veo 3.1</div>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('builder')">Prompt Builder</div>
+    <div class="tab" onclick="switchTab('elevenlabs')">ElevenLabs Lines</div>
+    <div class="tab" onclick="switchTab('settings')">API Settings</div>
+  </div>
+
+  <!-- TAB 1: PROMPT BUILDER -->
+  <div class="tab-panel active" id="tab-builder">
+
+    <div class="card">
+      <div class="card-title">Scene description</div>
+      <textarea id="concept" placeholder="Describe your scene in detail — characters, setting, props, on-screen text, timing, action notes..."></textarea>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Camera</div>
+      <div class="section">
+        <div class="section-label">Shot type</div>
+        <div class="pill-group" id="shot-group">
+          <div class="pill active" data-val="Medium shot">Medium</div>
+          <div class="pill" data-val="Close-up">Close-up</div>
+          <div class="pill" data-val="Wide establishing shot">Wide</div>
+          <div class="pill" data-val="Extreme close-up">Extreme close-up</div>
+          <div class="pill" data-val="Aerial drone shot">Aerial</div>
+          <div class="pill" data-val="POV first-person shot">POV</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Camera movement</div>
+        <div class="pill-group" id="cam-group">
+          <div class="pill active" data-val="static locked-off camera">Static</div>
+          <div class="pill" data-val="slow tracking shot">Tracking</div>
+          <div class="pill" data-val="smooth dolly push-in">Dolly in</div>
+          <div class="pill" data-val="slow dolly pull-out">Dolly out</div>
+          <div class="pill" data-val="gentle handheld">Handheld</div>
+          <div class="pill" data-val="slow cinematic pan">Pan</div>
+          <div class="pill" data-val="orbit 360 around subject">Orbit</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Style &amp; look</div>
+      <div class="section">
+        <div class="section-label">Video style</div>
+        <div class="pill-group" id="style-group">
+          <div class="pill active" data-val="photorealistic cinematic, shot on 35mm film with anamorphic lens">Cinematic</div>
+          <div class="pill" data-val="gritty documentary style, natural lighting">Documentary</div>
+          <div class="pill" data-val="Japanese anime style, bold outlines, vibrant colors">Anime</div>
+          <div class="pill" data-val="Pixar-style 3D animation, smooth rendering">3D Animated</div>
+          <div class="pill" data-val="stop-motion claymation aesthetic">Stop-motion</div>
+          <div class="pill" data-val="polished commercial advertisement style">Commercial</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Lighting</div>
+        <div class="pill-group" id="light-group">
+          <div class="pill" data-val="warm golden hour sunlight">Golden hour</div>
+          <div class="pill" data-val="soft overcast natural light">Overcast</div>
+          <div class="pill" data-val="dramatic side rim lighting">Rim light</div>
+          <div class="pill" data-val="neon urban artificial light">Neon</div>
+          <div class="pill" data-val="dark moody low-key lighting">Low-key</div>
+          <div class="pill active" data-val="bright studio lighting">Studio</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Tone (multi-select)</div>
+        <div class="pill-group" id="tone-group">
+          <div class="pill" data-val="emotional storytelling tone">Storytelling</div>
+          <div class="pill" data-val="high-energy action pace">Action</div>
+          <div class="pill" data-val="romantic and intimate mood">Romantic</div>
+          <div class="pill" data-val="eerie horror suspense atmosphere">Horror</div>
+          <div class="pill" data-val="clear educational explainer pace">Educational</div>
+          <div class="pill" data-val="sleek product showcase">Product ad</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Output specs</div>
+      <div class="row">
+        <div class="field">
+          <div class="section-label">Duration</div>
+          <div class="pill-group" id="dur-group">
+            <div class="pill" data-val="4-second clip">4 sec</div>
+            <div class="pill" data-val="6-second clip">6 sec</div>
+            <div class="pill active" data-val="8-second clip">8 sec</div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="section-label">Aspect ratio</div>
+          <div class="pill-group" id="ratio-group">
+            <div class="pill active" data-val="16:9 widescreen">16:9</div>
+            <div class="pill" data-val="9:16 vertical portrait">9:16</div>
+            <div class="pill" data-val="1:1 square">1:1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Audio source</div>
+      <div class="pill-group" id="audio-source-group">
+        <div class="pill active-amber active" data-val="external">External — Veo audio OFF</div>
+        <div class="pill active-green" data-val="veo">Veo audio ON</div>
+      </div>
+      <div class="audio-hint" id="audio-hint">Prompt will instruct Veo: VISUAL ANIMATION ONLY — no audio generation. Add your own audio in post.</div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:0.5rem;">
+      <button class="btn btn-primary" onclick="buildPrompt()">Build Prompt →</button>
+      <span style="font-size:12px; color:var(--text3)">Characters in ElevenLabs tab auto-inject LEFT/RIGHT position-lock logic</span>
+    </div>
+
+    <div id="warn-prompt" style="display:none"></div>
+    <div id="prompt-result" style="display:none"></div>
+
+  </div>
+
+  <!-- TAB 2: ELEVENLABS -->
+  <div class="tab-panel" id="tab-elevenlabs">
+
+    <div class="info-box" style="margin-bottom:1.25rem;">
+      Characters are auto-assigned screen positions <strong>LEFT / RIGHT / CENTER</strong> in the order you add them. These positions inject directly into the Veo prompt's position-lock block, preventing character action swap in multi-character scenes.
+    </div>
+
+    <div id="char-list"></div>
+    <button class="btn" onclick="addChar()" style="margin-bottom:1.5rem;">+ Add character</button>
+
+    <hr class="divider">
+
+    <div class="card">
+      <div class="card-title">Generate ElevenLabs dialogue lines</div>
+      <div class="api-section">
+        <div class="section-label">Anthropic API key</div>
+        <div class="api-row">
+          <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off" oninput="checkKey()">
+          <button class="btn btn-sm" onclick="toggleKeyVis()">Show</button>
+        </div>
+        <div class="api-status" id="api-status">Enter your Anthropic API key to enable AI-generated dialogue lines.</div>
+      </div>
+      <button class="btn btn-green" id="gen-lines-btn" onclick="generateLines()" disabled>Generate ElevenLabs lines</button>
+    </div>
+
+    <div id="warn-el" style="display:none"></div>
+    <div id="ai-response" class="ai-response">
+      <h4>ElevenLabs dialogue lines <button class="btn btn-sm" onclick="copyEl()">Copy all</button></h4>
+      <div class="ai-response-body" id="ai-response-body"></div>
+    </div>
+
+  </div>
+
+  <!-- TAB 3: SETTINGS -->
+  <div class="tab-panel" id="tab-settings">
+
+    <div class="card">
+      <div class="card-title">API key (persistent)</div>
+      <p style="font-size:13px; color:var(--text2); margin-bottom:1rem;">Your API key is stored only in <code>localStorage</code> on this device and sent only directly to the Anthropic API. Nothing is logged or stored anywhere else.</p>
+      <div class="api-section">
+        <div class="section-label">Anthropic API key</div>
+        <div class="api-row">
+          <input type="password" id="api-key-settings" placeholder="sk-ant-..." autocomplete="off">
+          <button class="btn btn-sm btn-primary" onclick="saveKey()">Save</button>
+          <button class="btn btn-sm" onclick="clearKey()">Clear</button>
+        </div>
+        <div class="api-status" id="api-status-settings">Used for ElevenLabs AI dialogue generation only.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Deploy to GitHub Pages</div>
+      <div style="font-size:13px; color:var(--text2); line-height:2.1;">
+        1. Create a new GitHub repo<br>
+        2. Upload <code>index.html</code> to the repo root<br>
+        3. Settings → Pages → Source: Deploy from branch → main → / (root)<br>
+        4. Live at <code>https://sevcav.github.io/your-repo-name/</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">About position locking</div>
+      <div style="font-size:13px; color:var(--text2); line-height:1.9;">
+        When characters are added in the ElevenLabs tab, the prompt builder injects a <strong>CHARACTER POSITIONS</strong> block anchoring every action beat and every silent beat to screen position (LEFT / RIGHT / CENTER) rather than character names. This prevents Veo from swapping which character owns each action — the most common failure mode in two-character scenes.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer">Veo 3.1 Prompt Builder — runs entirely in your browser</div>
+
+<script>
+function switchTab(name) {
+  const ids=['builder','elevenlabs','settings'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ids[i]===name));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+}
+
+const audioHints={
+  external:'Prompt will instruct Veo: VISUAL ANIMATION ONLY — no audio generation. Add your own audio in post.',
+  veo:'Prompt will include full synchronized audio instruction — Veo generates dialogue, sound effects, and ambient audio.'
+};
+document.querySelectorAll('#audio-source-group .pill').forEach(pill=>{
+  pill.addEventListener('click',()=>{
+    document.querySelectorAll('#audio-source-group .pill').forEach(p=>p.classList.remove('active','active-green','active-amber'));
+    pill.classList.add('active',pill.dataset.val==='veo'?'active-green':'active-amber');
+    document.getElementById('audio-hint').textContent=audioHints[pill.dataset.val];
+  });
+});
+
+['shot-group','cam-group','style-group','light-group','dur-group','ratio-group'].forEach(gid=>{
+  document.querySelectorAll('#'+gid+' .pill').forEach(pill=>{
+    pill.addEventListener('click',()=>{
+      document.querySelectorAll('#'+gid+' .pill').forEach(p=>p.classList.remove('active'));
+      pill.classList.add('active');
+    });
+  });
+});
+document.querySelectorAll('#tone-group .pill').forEach(pill=>pill.addEventListener('click',()=>pill.classList.toggle('active')));
+
+function getActive(gid){const el=document.querySelector('#'+gid+' .pill.active');return el?el.dataset.val:'';}
+function getMulti(gid){return Array.from(document.querySelectorAll('#'+gid+' .pill.active')).map(p=>p.dataset.val).join(', ');}
+function getAudioMode(){const el=document.querySelector('#audio-source-group .pill.active');return el?el.dataset.val:'external';}
+
+let charCount=0;
+const positions=['LEFT','RIGHT','CENTER','FAR LEFT','FAR RIGHT'];
+const posClasses=['pos-left','pos-right','pos-center','pos-other','pos-other'];
+const voiceOptions=['Male deep','Male mid','Female warm','Female sharp','Elderly','Child','Narrator','Villain','Hero'];
+
+function addChar(){
+  charCount++;
+  const id='char-'+charCount;
+  const idx=document.querySelectorAll('.char-card').length;
+  const pos=positions[Math.min(idx,positions.length-1)];
+  const posClass=posClasses[Math.min(idx,posClasses.length-1)];
+  const div=document.createElement('div');
+  div.className='char-card';div.id=id;div.dataset.pos=pos;
+  div.innerHTML=`
+    <div class="char-row">
+      <div class="field">
+        <div class="section-label" style="margin-bottom:4px">Name / role <span class="pos-badge ${posClass}" id="${id}-badge">${pos}</span></div>
+        <input type="text" placeholder="e.g. IRONMIKE, Beerman, Narrator" id="${id}-name">
+      </div>
+      <div class="field">
+        <div class="section-label" style="margin-bottom:4px">Personality / delivery</div>
+        <input type="text" placeholder="e.g. booming slow bass, gravelly" id="${id}-tone">
+      </div>
+      <button class="remove-btn" onclick="removeChar('${id}')">×</button>
+    </div>
+    <div style="margin-top:10px">
+      <div class="section-label" style="margin-bottom:6px">ElevenLabs voice type</div>
+      <div class="voice-pills" id="${id}-voice">
+        ${voiceOptions.map((v,i)=>`<span class="voice-pill${i===0?' active':''}" data-v="${v}" onclick="pickVoice('${id}',this)">${v}</span>`).join('')}
+      </div>
+    </div>`;
+  document.getElementById('char-list').appendChild(div);
+  updateBadges();
+}
+
+function removeChar(id){const el=document.getElementById(id);if(el)el.remove();updateBadges();}
+
+function updateBadges(){
+  document.querySelectorAll('.char-card').forEach((card,i)=>{
+    const pos=positions[Math.min(i,positions.length-1)];
+    const posClass=posClasses[Math.min(i,posClasses.length-1)];
+    card.dataset.pos=pos;
+    const badge=document.getElementById(card.id+'-badge');
+    if(badge){badge.textContent=pos;badge.className='pos-badge '+posClass;}
+  });
+}
+
+function pickVoice(charId,el){
+  document.querySelectorAll('#'+charId+'-voice .voice-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function getChars(){
+  return Array.from(document.querySelectorAll('.char-card')).map(card=>({
+    name:document.getElementById(card.id+'-name').value.trim()||'Character',
+    tone:document.getElementById(card.id+'-tone').value.trim()||'neutral',
+    voice:(card.querySelector('.voice-pill.active')||{}).dataset?.v||'Male mid',
+    pos:card.dataset.pos
+  }));
+}
+
+function buildPrompt(){
+  const concept=document.getElementById('concept').value.trim();
+  document.getElementById('warn-prompt').style.display='none';
+  if(!concept){
+    document.getElementById('warn-prompt').innerHTML='<div class="warn">Please enter your scene description above.</div>';
+    document.getElementById('warn-prompt').style.display='block';
+    document.getElementById('concept').focus();return;
+  }
+  const shot=getActive('shot-group'),cam=getActive('cam-group');
+  const style=getActive('style-group'),light=getActive('light-group');
+  const dur=getActive('dur-group'),ratio=getActive('ratio-group');
+  const tones=getMulti('tone-group'),audioMode=getAudioMode();
+
+  const chars=getChars();
+  let posBlock='';
+  const named=chars.filter(c=>c.name!=='Character');
+  if(named.length){
+    const lines=named.map(c=>`${c.pos} character = ${c.name}.`).join('\n');
+    posBlock=`\n\nCHARACTER POSITIONS — anchor every action and every silent beat to screen position only, never to character names alone:\n${lines}\nFor every action beat: state screen position first, then the action. For every silent beat: explicitly state "[POSITION] character: mouth closed, face still, zero movement."`;
+  }
+
+  const toneClause=tones?` Tone: ${tones}. `:'';
+  const audioLine=audioMode==='veo'
+    ?'Audio: rich synchronized sound design — layered ambient environment, character dialogue timed precisely to lip movement, punctuated sound effects matched to on-screen action.'
+    :'AUDIO: VISUAL ANIMATION ONLY. Do not generate any audio, dialogue audio, lip-sync audio synthesis, or sound effects. All audio will be added externally in post-production.';
+
+  const audioTagClass=audioMode==='veo'?'t-aud-veo':'t-aud-ext';
+  const audioTagLabel=audioMode==='veo'?'Veo audio ON':'External audio';
+  const prompt=`${shot}, ${cam}. ${concept}${posBlock}${toneClause}\n\n${style}. ${light}. ${dur}, ${ratio} format.\n\n${audioLine}`;
+
+  document.getElementById('prompt-result').innerHTML=`
+    <div class="result-card">
+      <div class="result-header">
+        <div>
+          <div class="result-title">Veo 3.1 prompt — ready to paste</div>
+          <div class="tags">
+            <span class="tag t-shot">Shot + camera</span>
+            ${posBlock?'<span class="tag t-pos">Position lock</span>':''}
+            <span class="tag t-style">Style + lighting</span>
+            <span class="tag t-spec">${dur} · ${ratio}</span>
+            <span class="tag ${audioTagClass}">${audioTagLabel}</span>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="copyPrompt(this)">Copy</button>
+      </div>
+      <div class="prompt-out" id="prompt-text">${prompt}</div>
+    </div>`;
+  document.getElementById('prompt-result').style.display='block';
+}
+
+function copyPrompt(btn){
+  navigator.clipboard.writeText(document.getElementById('prompt-text').innerText).then(()=>{
+    btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000);
+  });
+}
+
+function loadKey(){
+  const k=localStorage.getItem('anthropic_key')||'';
+  if(k){document.getElementById('api-key').value=k;document.getElementById('api-key-settings').value=k;setKeyStatus(true);}
+}
+function saveKey(){
+  const k=document.getElementById('api-key-settings').value.trim();
+  if(k){localStorage.setItem('anthropic_key',k);document.getElementById('api-key').value=k;setKeyStatus(true);
+    document.getElementById('api-status-settings').textContent='Key saved.';
+    document.getElementById('api-status-settings').className='api-status ok';}
+}
+function clearKey(){
+  localStorage.removeItem('anthropic_key');
+  ['api-key','api-key-settings'].forEach(id=>document.getElementById(id).value='');
+  setKeyStatus(false);
+  document.getElementById('api-status-settings').textContent='Key cleared.';
+  document.getElementById('api-status-settings').className='api-status';
+}
+function checkKey(){
+  const k=document.getElementById('api-key').value.trim();
+  localStorage.setItem('anthropic_key',k);setKeyStatus(k.length>10);
+}
+function setKeyStatus(ok){
+  document.getElementById('gen-lines-btn').disabled=!ok;
+  const s=document.getElementById('api-status');
+  s.textContent=ok?'API key set — ready to generate.':'Enter your Anthropic API key to enable AI-generated dialogue lines.';
+  s.className='api-status'+(ok?' ok':'');
+}
+function toggleKeyVis(){
+  const inp=document.getElementById('api-key');
+  inp.type=inp.type==='password'?'text':'password';
+}
+
+async function generateLines(){
+  const concept=document.getElementById('concept').value.trim();
+  const apiKey=document.getElementById('api-key').value.trim();
+  const chars=getChars();
+  const dur=getActive('dur-group');
+  document.getElementById('warn-el').style.display='none';
+
+  if(!concept){showWarnEl('Go to the Prompt Builder tab and fill in your scene first.');return;}
+  if(!chars.length){showWarnEl('Add at least one character above.');return;}
+  if(!apiKey){showWarnEl('Enter your Anthropic API key above.');return;}
+
+  const btn=document.getElementById('gen-lines-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generating...';
+
+  const charSummary=chars.map(c=>`- ${c.name} (screen position: ${c.pos}): ${c.tone}, ElevenLabs voice type: ${c.voice}`).join('\n');
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','x-api-key':apiKey},
+      body:JSON.stringify({
+        model:'claude-opus-4-5-20251101',
+        max_tokens:1500,
+        system:'You are an expert dialogue writer and ElevenLabs voice production specialist. Write natural, character-appropriate dialogue lines and give precise ElevenLabs settings guidance. Format output with clear headers and numbered lines, ready to copy-paste.',
+        messages:[{role:'user',content:`Generate ElevenLabs-ready dialogue lines for each character in this scene:\n\nSCENE: ${concept}\nVIDEO LENGTH: ${dur}\n\nCHARACTERS (include screen position in output headers):\n${charSummary}\n\nFor each character:\n- Use name + screen position as a section header\n- Note ElevenLabs voice type\n- Write 2-3 numbered dialogue options fitting the scene\n- Include ElevenLabs settings tips: speed %, stability, pitch adjustments\n- Lines should be ready to paste directly into ElevenLabs\n- If a character has a grunt or non-speech sound, suggest generating it as a separate clip`}]
+      })
+    });
+    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error?.message||`HTTP ${resp.status}`);}
+    const data=await resp.json();
+    const text=data.content?.map(b=>b.text||'').join('')||'';
+    document.getElementById('ai-response-body').textContent=text;
+    document.getElementById('ai-response').style.display='block';
+  }catch(err){showWarnEl(err.message,'err');}
+
+  btn.disabled=false;btn.innerHTML='Generate ElevenLabs lines';
+}
+
+function showWarnEl(msg,type='warn'){
+  document.getElementById('warn-el').innerHTML=`<div class="${type==='err'?'err-box':'warn'}">${msg}</div>`;
+  document.getElementById('warn-el').style.display='block';
+}
+function copyEl(){navigator.clipboard.writeText(document.getElementById('ai-response-body').textContent);}
+
+loadKey();
+addChar();
+addChar();
+</script>
+</body>
+</html>
